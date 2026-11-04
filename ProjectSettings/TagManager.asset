@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Botinha
+  - Pezinho
+  - Skate
+  - Rolamento
+  - Espadas
+  - Moedas
+  - tag semAtrito
+  - bonusPuloTriplo
+  - bonusPuloDuplo
+  - chao
+  - Limbo
+  - Corrente
+  - Espada2
+  - Entrada Caverna
+  - Caverna
+  - mover
+  - destrutivel1
+  - tipo1
+  - armadilha01
+  - Plataforma
+  - portal01
+  - portal02
+  - inimigo01
+  - inimigo02
+  - areaAtaqueEsquerda
+  - areaAtaqueDireita
+  - projetil1
+  - projetil2
+  - projetil3
+  - disparoJogador
+  - disparoInimigo
+  - gradeTemplo
+  - objetivo
+  - botao_start
+  - botao_fase1
+  - botao_fase2
+  - botao_templo
+  - botao_menu
+  - reiniciar
+  - fechar
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0

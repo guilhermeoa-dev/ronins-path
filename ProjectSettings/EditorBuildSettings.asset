@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/PrimeiraTela.unity
+    guid: bcfb0ffc9b20de541a35fdc7003c1712
+  - enabled: 1
+    path: Assets/Cena1.unity
+    guid: 74cf31558f7040d498bb7c33a87c34b5
+  - enabled: 1
+    path: Assets/GameOver.unity
+    guid: da10ff065efff894299ef507e7b9b55b
+  - enabled: 1
+    path: Assets/Vitoria1.unity
+    guid: 19762cdbe21ec8e478dbd68a964d39a2
+  - enabled: 1
+    path: Assets/Cena2.unity
+    guid: cea94d0866de7494da380e9395968bb3
+  - enabled: 1
+    path: Assets/Vitoria2.unity
+    guid: e98740ae7a1031b48bebe1637f4ea6e8
+  - enabled: 1
+    path: Assets/Vitoria3.unity
+    guid: bd8a9412f85f96146918f0ef9e99d6ad
+  - enabled: 1
+    path: Assets/FAses.unity
+    guid: 90429999c03275547902c8f82ffa640d
+  - enabled: 1
+    path: Assets/Bimestres34/TravessiaDoTemplo.unity
+    guid: 4b1b9b1a938b6624c81a4ad3a3e2068c

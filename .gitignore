@@ -1,0 +1,40 @@
+# Unity: caches, arquivos temporarios e builds
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/MemoryCaptures/
+/Recordings/
+
+# IDEs e arquivos gerados
+/.vs/
+/.vscode/
+/.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.opendb
+*.VC.db
+*.log
+.DS_Store
+Thumbs.db
+
+# Credenciais locais
+.env
+.env.*
+*.keystore
+*.jks
+*.pfx
+*.p12
+
+# Relatorios locais do editor
+/TestResults*.xml
+/TestResults*.json
+/crash-report.txt
