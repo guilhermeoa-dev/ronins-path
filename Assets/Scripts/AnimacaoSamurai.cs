@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 // Quadros completos com o mesmo pivo: o corpo e a katana nao saltam entre recortes.
-[DefaultExecutionOrder(200)][RequireComponent(typeof(Samurai), typeof(Animator), typeof(Rigidbody2D))] public class AnimacaoSamurai : MonoBehaviour
+[DefaultExecutionOrder(200)]
+[RequireComponent(typeof(Samurai), typeof(Animator), typeof(Rigidbody2D))]
+public class AnimacaoSamurai : MonoBehaviour
 {
     Samurai jogador;
     Animator animador;
@@ -53,7 +55,7 @@
         NoChao = VerificarChao();
         bool novoPulo = ultimoPulo != jogador.SequenciaPulo;
         ultimoPulo = jogador.SequenciaPulo;
-        string proximo = jogador.ataqueAtivo ? "Atacando" : jogador.defesaAtiva ? "Defendendo" : jogador.dashAtivo ? "Dash" : !NoChao ? "Pulando" : Mathf.Abs(corpo.velocity.x) > .1f ? (jogador.correndo ? "Correndo" : "Andando") : "Parado";
+        string proximo = EscolherAnimacao();
         bool mudou = estado != proximo;
         // Aulas 03x05 e 04x04: os bools comandam transicoes sem Has Exit Time.
         animador.speed = 1;
@@ -77,6 +79,21 @@
         }
         PuloPausado = proximo == "Pulando" && corpo.velocity.y <= 0;
         animador.speed = PuloPausado ? 0 : (proximo == "Dash" ? 1.6f : 1);
+    }
+
+    string EscolherAnimacao()
+    {
+        if (jogador.ataqueAtivo)
+            return "Atacando";
+        if (jogador.defesaAtiva)
+            return "Defendendo";
+        if (jogador.dashAtivo)
+            return "Dash";
+        if (!NoChao)
+            return "Pulando";
+        if (Mathf.Abs(corpo.velocity.x) > .1f)
+            return jogador.correndo ? "Correndo" : "Andando";
+        return "Parado";
     }
 
     void OnDisable()

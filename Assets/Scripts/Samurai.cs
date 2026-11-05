@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -21,16 +20,12 @@ public class Samurai : MonoBehaviour
     static int ContadorEspadas = 0;
     static int ContadorMoedas = 0;
     static int ContadorVidas = 5;
-    string TagObjetoTocado;
-    string TagTriggerEnter;
-    bool SegurarCorrer;
-    bool ApertouPular;
     int ContadorPulos;
     static int TotalPulos;
-    bool podePular;
-    float VelocidadeX, VelocidadeY, VelocidadeHorizontalMax, DirecaoHorizontal, VelocidadePulo;
+    static readonly float[] RecargaPorProjetil = { .4f, .8f, 1.2f };
+    static readonly float[] VelocidadePorProjetil = { 10, 7, 6 };
+    const float VelocidadePulo = 6.5f;
     Rigidbody2D CorpoRigidoPersonagem;
-    Vector2 VetorvelociadePersonagem;
     Animator AnimadorPersonagem;
     Collider2D ColisorPersonagem;
     // Nova partida/menu zeram o progresso; passagem Cena1 -> Cena2 conserva a coleta.
@@ -59,11 +54,8 @@ public class Samurai : MonoBehaviour
         MaterialSemAtrito = new PhysicsMaterial2D();
         MaterialSemAtrito.friction = 0f;
         Renderer = GetComponent<SpriteRenderer>();
-        TagObjetoTocado = "";
-        ApertouPular = false;
         ContadorPulos = 0;
         TotalPulos = 1;
-        SegurarCorrer = false;
         CorpoRigidoPersonagem = GetComponent<Rigidbody2D>();
         AnimadorPersonagem = GetComponent<Animator>();
         ColisorPersonagem = GetComponent<Collider2D>();
@@ -76,24 +68,13 @@ public class Samurai : MonoBehaviour
             areaKatanaEsquerda = esquerda.GetComponent<Collider2D>();
         if (direita != null)
             areaKatanaDireita = direita.GetComponent<Collider2D>();
-        VelocidadePulo = 6.5f;
-        VelocidadeX = 0f;
-        VelocidadeY = 0f;
-        DirecaoHorizontal = 0f;
-        VelocidadeHorizontalMax = 3f;
-        podePular = true;
         CorpoRigidoPersonagem.gravityScale = 1.2f;
         CorpoRigidoPersonagem.freezeRotation = true;
-        string textoVidas = ContadorVidas.ToString();
-        UITextVidas.text = textoVidas;
-        string textoEspadas = ContadorEspadas.ToString();
-        UITextEspadas.text = textoEspadas;
-        string textoSkates = ContadorSkates.ToString();
-        UITextSkates.text = textoSkates;
-        string textoMoedas = ContadorMoedas.ToString();
-        UITextMoedas.text = textoMoedas;
-        VetorvelociadePersonagem = new Vector2(VelocidadeX, VelocidadeY);
-        CorpoRigidoPersonagem.velocity = VetorvelociadePersonagem;
+        UITextVidas.text = ContadorVidas.ToString();
+        UITextEspadas.text = ContadorEspadas.ToString();
+        UITextSkates.text = ContadorSkates.ToString();
+        UITextMoedas.text = ContadorMoedas.ToString();
+        CorpoRigidoPersonagem.velocity = Vector2.zero;
     }
 
     void Update()
@@ -112,9 +93,6 @@ public class Samurai : MonoBehaviour
         Pular();
         if (!modoMissao)
             VerificarVitoria();
-        //print(podePular);
-        //print(TotalPulos);
-        // Log por frame removido para manter o Console utilizavel.
     }
 
     void MovimentoHorizontal()
@@ -132,39 +110,21 @@ public class Samurai : MonoBehaviour
         if (ataqueAtivo || defesaAtiva || missaoEncerrada)
             direcao = 0;
         correndo = correr;
-        DirecaoHorizontal = direcao;
-        SegurarCorrer = correr;
-        if (SegurarCorrer == true)
-        {
-            VelocidadeHorizontalMax = 5 + BonusBotinha;
-        }
-        else
-        {
-            VelocidadeHorizontalMax = 3 + BonusBotinha;
-        }
+        float velocidadeBase = (correr ? 5 : 3) + BonusBotinha;
         // O bonus de tempo soma ao permanente e expira sem apaga-lo (aula 03x07).
-        VelocidadeHorizontalMax = Mathf.Max(1, VelocidadeHorizontalMax + (bonusRestante > 0 ? 2 : 0) - reducaoCorrente);
-        VelocidadeX = VelocidadeHorizontalMax * DirecaoHorizontal;
-        VelocidadeY = CorpoRigidoPersonagem.velocity.y;
+        float bonusTemporario = bonusRestante > 0 ? 2 : 0;
+        float velocidadeMaxima = Mathf.Max(1, velocidadeBase + bonusTemporario - reducaoCorrente);
+        float velocidadeX = velocidadeMaxima * direcao;
         if (ContadorPulos == 2)
-        {
-            VelocidadeX = (VelocidadeHorizontalMax * DirecaoHorizontal) * 0.8f;
-        }
-        if (ContadorPulos == 3)
-        {
-            VelocidadeX = (VelocidadeHorizontalMax * DirecaoHorizontal) * 0.6f;
-        }
-        if (DirecaoHorizontal < 0)
-        {
-            Renderer.flipX = true;
-        }
-        else if (DirecaoHorizontal > 0)
-        {
-            Renderer.flipX = false;
-        }
-        VetorvelociadePersonagem = new Vector2(VelocidadeX, VelocidadeY);
-        CorpoRigidoPersonagem.velocity = VetorvelociadePersonagem;
-        AnimadorPersonagem.SetFloat("VelocidadeX", Mathf.Abs(VelocidadeX));
+            velocidadeX *= .8f;
+        else if (ContadorPulos == 3)
+            velocidadeX *= .6f;
+
+        if (direcao != 0)
+            Renderer.flipX = direcao < 0;
+
+        CorpoRigidoPersonagem.velocity = new Vector2(velocidadeX, CorpoRigidoPersonagem.velocity.y);
+        AnimadorPersonagem.SetFloat("VelocidadeX", Mathf.Abs(velocidadeX));
     }
 
     void Pular()
@@ -176,30 +136,20 @@ public class Samurai : MonoBehaviour
     {
         if (ataqueAtivo || defesaAtiva || dashAtivo || missaoEncerrada)
             return;
-        ApertouPular = apertou;
-        if (PegouPezinho == false)
-        {
-            podePular = false;
-        }
-        else if (PegouPezinho == true)
-        {
-            podePular = true;
-        }
-        if (ApertouPular == true && podePular == true && ContadorPulos < TotalPulos)
-        {
-            ContadorPulos = ContadorPulos + 1;
-            SequenciaPulo++;
-            SomRonin.Tocar("pulo", transform.position);
-            VelocidadeX = CorpoRigidoPersonagem.velocity.x;
-            // Aula 02x06: calcular antes de montar e aplicar o vetor ao Rigidbody2D.
-            VelocidadeY = VelocidadePulo;
-            if (ContadorPulos == 2)
-                VelocidadeY = VelocidadePulo * .8f;
-            if (ContadorPulos == 3)
-                VelocidadeY = VelocidadePulo * .7f;
-            VetorvelociadePersonagem = new Vector2(VelocidadeX, VelocidadeY);
-            CorpoRigidoPersonagem.velocity = VetorvelociadePersonagem;
-        }
+        if (!apertou || !PegouPezinho || ContadorPulos >= TotalPulos)
+            return;
+
+        ContadorPulos++;
+        SequenciaPulo++;
+        SomRonin.Tocar("pulo", transform.position);
+        // Aula 02x06: calcular antes de montar e aplicar o vetor ao Rigidbody2D.
+        float velocidadeY = VelocidadePulo;
+        if (ContadorPulos == 2)
+            velocidadeY *= .8f;
+        else if (ContadorPulos == 3)
+            velocidadeY *= .7f;
+
+        CorpoRigidoPersonagem.velocity = new Vector2(CorpoRigidoPersonagem.velocity.x, velocidadeY);
     }
 
     void OnTriggerEnter2D(Collider2D objetoTriggerEnter)
@@ -245,125 +195,111 @@ public class Samurai : MonoBehaviour
         if (!enabled || trocandoCena || missaoEncerrada || objetoTriggerEnter == null)
             return;
         string tipo = objetoTriggerEnter.gameObject.tag;
-        bool item = tipo == "Moedas" || tipo == "Espadas" || tipo == "Espada2" || tipo == "Skate" || tipo == "Pezinho" || tipo == "Botinha" || tipo == "bonusPuloDuplo" || tipo == "bonusPuloTriplo" || tipo == "Corrente";
-        if (item && !itensColetados.Add(objetoTriggerEnter.gameObject.GetInstanceID()))
-            return;
-        if (item)
-            SomRonin.Tocar("coleta", transform.position);
-        TagTriggerEnter = objetoTriggerEnter.gameObject.tag;
-        if (TagTriggerEnter == "bonusPuloDuplo")
+        if (tipo == "Limbo")
         {
-            print("OnTriggerEnter2D():" + TagTriggerEnter + "\nPulo duplo habilitado!");
-            PegouPezinho = true;
-            TotalPulos = 2;
-            Destroy(objetoTriggerEnter.gameObject);
-        }
-        if (TagTriggerEnter == "bonusPuloTriplo")
-        {
-            print("OnTriggerEnter2D():" + TagTriggerEnter + "\nPulo triplo habilitado!");
-            PegouPezinho = true;
-            TotalPulos = 3;
-            Destroy(objetoTriggerEnter.gameObject);
-        }
-        if (TagTriggerEnter == "Botinha")
-        {
-            print("OnTriggerEnter2D():" + TagTriggerEnter);
-            if (BonusBotinha < 4)
+            AlvoTemplo alvo = objetoTriggerEnter.GetComponentInParent<AlvoTemplo>();
+            if (alvo != null)
             {
-                BonusBotinha = BonusBotinha + 1f;
+                if (!alvo.Derrotado)
+                    ReceberDanoMissao(1, false);
+                return;
             }
-            print("Velocidade botinha: " + BonusBotinha);
-            Destroy(objetoTriggerEnter.gameObject);
-        }
-        if (TagTriggerEnter == "Pezinho")
-        {
-            print("OnTriggerEnter2D():" + TagTriggerEnter);
-            PegouPezinho = true;
-            print("Pulo simples habilitado\nPoder de pulo: " + VelocidadePulo);
-            Destroy(objetoTriggerEnter.gameObject);
-        }
-        if (TagTriggerEnter == "Skate")
-        {
-            print("OnTriggerEnter2D():" + TagTriggerEnter);
-            ContadorSkates = ContadorSkates + 1;
-            print("Skates: " + ContadorSkates);
-            string textoSkates = ContadorSkates.ToString();
-            UITextSkates.text = textoSkates;
-            Destroy(objetoTriggerEnter.gameObject);
-        }
-        if (TagTriggerEnter == "Espadas")
-        {
-            print("OnTriggerEnter2D():" + TagTriggerEnter);
-            ContadorEspadas = ContadorEspadas + 1;
-            print("Espadas: " + ContadorEspadas);
-            string textoEspadas = ContadorEspadas.ToString();
-            UITextEspadas.text = textoEspadas;
-            Destroy(objetoTriggerEnter.gameObject);
-        }
-        if (TagTriggerEnter == "Espada2")
-        {
-            print("OnTriggerEnter2D():" + TagTriggerEnter);
-            Destroy(objetoTriggerEnter.gameObject);
-            TrocarCena("Vitoria3");
-            return;
-        }
-        if (TagTriggerEnter == "Moedas")
-        {
-            ContadorMoedas = ContadorMoedas + 1;
-            print("OnTriggerEnter2D():" + TagTriggerEnter);
-            print("Moedas: " + ContadorMoedas);
-            string textoMoedas = ContadorMoedas.ToString();
-            UITextMoedas.text = textoMoedas;
-            Destroy(objetoTriggerEnter.gameObject);
-            //objetoTocado.gameObject.SetActive(false);
-        }
-        if (TagTriggerEnter == "Limbo" && objetoTriggerEnter.GetComponentInParent<AlvoTemplo>() != null)
-        {
-            if (!objetoTriggerEnter.GetComponentInParent<AlvoTemplo>().Derrotado)
-                ReceberDanoMissao(1, false);
-            return;
-        }
-        if (TagTriggerEnter == "Limbo")
-        {
-            print("OnTriggerEnter2D():" + TagTriggerEnter);
-            ContadorVidas = ContadorVidas - 1;
+            print("OnTriggerEnter2D():" + tipo);
+            ContadorVidas--;
             print("Vidas: " + ContadorVidas);
-            string textoVidas = ContadorVidas.ToString();
-            UITextVidas.text = textoVidas;
+            UITextVidas.text = ContadorVidas.ToString();
             if (ContadorVidas <= 0)
             {
                 ReiniciarPartida();
                 TrocarCena("GameOver");
             }
-            else TrocarCena(SceneManager.GetActiveScene().name);
+            else
+                TrocarCena(SceneManager.GetActiveScene().name);
             return;
         }
-        if (TagTriggerEnter == "Caverna" && ContadorEspadas == 0 && ContadorMoedas >= 20)
+        if (tipo == "Caverna" && ContadorEspadas == 0 && ContadorMoedas >= 20)
         {
-            print("OnTriggerEnter2D():" + TagTriggerEnter);
+            print("OnTriggerEnter2D():" + tipo);
             TrocarCena("Cena2");
             return;
         }
-        if (TagTriggerEnter == "Corrente")
+        switch (tipo)
         {
-            print("OnTriggerEnter2D():" + TagTriggerEnter + "\nMovimentos Limitados!");
-            PegouPezinho = true;
-            TotalPulos = 1;
-            reducaoCorrente = Mathf.Min(2, reducaoCorrente + 1);
-            Destroy(objetoTriggerEnter.gameObject);
+            case "bonusPuloDuplo":
+            case "bonusPuloTriplo":
+            case "Botinha":
+            case "Pezinho":
+            case "Skate":
+            case "Espadas":
+            case "Espada2":
+            case "Moedas":
+            case "Corrente":
+                AplicarColeta(objetoTriggerEnter.gameObject, tipo);
+                break;
         }
+    }
+
+    void AplicarColeta(GameObject objeto, string tipo)
+    {
+        if (!itensColetados.Add(objeto.GetInstanceID()))
+            return;
+
+        SomRonin.Tocar("coleta", transform.position);
+        print("OnTriggerEnter2D():" + tipo);
+        switch (tipo)
+        {
+            case "bonusPuloDuplo":
+            case "bonusPuloTriplo":
+                PegouPezinho = true;
+                TotalPulos = tipo == "bonusPuloDuplo" ? 2 : 3;
+                print(TotalPulos == 2 ? "Pulo duplo habilitado!" : "Pulo triplo habilitado!");
+                break;
+            case "Botinha":
+                if (BonusBotinha < 4)
+                    BonusBotinha += 1f;
+                print("Velocidade botinha: " + BonusBotinha);
+                break;
+            case "Pezinho":
+                PegouPezinho = true;
+                print("Pulo simples habilitado\nPoder de pulo: " + VelocidadePulo);
+                break;
+            case "Skate":
+                ContadorSkates++;
+                print("Skates: " + ContadorSkates);
+                UITextSkates.text = ContadorSkates.ToString();
+                break;
+            case "Espadas":
+                ContadorEspadas++;
+                print("Espadas: " + ContadorEspadas);
+                UITextEspadas.text = ContadorEspadas.ToString();
+                break;
+            case "Moedas":
+                ContadorMoedas++;
+                print("Moedas: " + ContadorMoedas);
+                UITextMoedas.text = ContadorMoedas.ToString();
+                break;
+            case "Corrente":
+                print("Movimentos Limitados!");
+                PegouPezinho = true;
+                TotalPulos = 1;
+                reducaoCorrente = Mathf.Min(2, reducaoCorrente + 1);
+                break;
+        }
+
+        Destroy(objeto);
+        if (tipo == "Espada2")
+            TrocarCena("Vitoria3");
     }
 
     void OnCollisionEnter2D(Collision2D objetoTocado)
     {
-        TagObjetoTocado = objetoTocado.gameObject.tag;
-        if (TagObjetoTocado.Contains("semAtrito"))
+        string tag = objetoTocado.gameObject.tag;
+        if (tag.Contains("semAtrito"))
         {
-            print(" OnCollisionEnter2D():" + TagObjetoTocado);
+            print(" OnCollisionEnter2D():" + tag);
             objetoTocado.collider.sharedMaterial = MaterialSemAtrito;
-            podePular = false;
         }
-        if (TagObjetoTocado.Contains("chao") || TagObjetoTocado == "Plataforma" || TagObjetoTocado == "mover")
+        if (tag.Contains("chao") || tag == "Plataforma" || tag == "mover")
         {
             foreach (ContactPoint2D contato in objetoTocado.contacts)
                 if (contato.normal.y > .5f)
@@ -379,12 +315,11 @@ public class Samurai : MonoBehaviour
 
     void OnCollisionExit2D(Collision2D objetoTocado)
     {
-        TagObjetoTocado = objetoTocado.gameObject.tag;
-        if (TagObjetoTocado.Contains("semAtrito"))
+        string tag = objetoTocado.gameObject.tag;
+        if (tag.Contains("semAtrito"))
         {
-            print(" OnCollisionExit2D():" + TagObjetoTocado);
+            print(" OnCollisionExit2D():" + tag);
             objetoTocado.collider.sharedMaterial = MaterialSemAtrito;
-            podePular = true;
         }
     }
     // Aula 02x04: condicoes de progresso decidem qual cena deve ser carregada.
@@ -513,7 +448,7 @@ public class Samurai : MonoBehaviour
         }
         if (missaoEncerrada)
             return;
-        if (transform.position.y < - 5)
+        if (transform.position.y < -5)
         {
             ContadorVidas = 0;
             EncerrarMissao(false);
@@ -567,7 +502,7 @@ public class Samurai : MonoBehaviour
         if (!(combateHabilitado || modoMissao) || missaoEncerrada || ataqueAtivo || defesaAtiva || carregando != null || Time.time < proximoDash)
             return false;
         SomRonin.Tocar("dash", transform.position);
-        direcaoDash = Renderer.flipX ? - 1 : 1;
+        direcaoDash = Renderer.flipX ? -1 : 1;
         fimDash = Time.time + Mathf.Max(.02f, duracaoDash);
         proximoDash = Time.time + Mathf.Max(duracaoDash, intervaloDash);
         CorpoRigidoPersonagem.velocity = new Vector2(direcaoDash * velocidadeDash, CorpoRigidoPersonagem.velocity.y);
@@ -586,14 +521,15 @@ public class Samurai : MonoBehaviour
     {
         if (!modoMissao || missaoEncerrada || ataqueAtivo || defesaAtiva || dashAtivo || carregando != null || objeto == null || !objeto.CompareTag("mover") || Vector2.Distance(transform.position, objeto.transform.position) > 1.8f)
             return;
-        if (objeto.GetComponent<Rigidbody2D>() == null || objeto.GetComponent<Collider2D>() == null)
+        Rigidbody2D rb = objeto.GetComponent<Rigidbody2D>();
+        Collider2D colisor = objeto.GetComponent<Collider2D>();
+        if (rb == null || colisor == null)
             return;
         carregando = objeto;
         objeto.carregado = true;
-        Rigidbody2D rb = objeto.GetComponent<Rigidbody2D>();
         rb.velocity = Vector2.zero;
         rb.isKinematic = true;
-        objeto.GetComponent<Collider2D>().enabled = false;
+        colisor.enabled = false;
         objeto.transform.SetParent(transform, true);
         objeto.transform.position = transform.position + Vector3.up * 1.5f;
     }
@@ -603,7 +539,7 @@ public class Samurai : MonoBehaviour
         if (carregando == null)
             return;
         carregando.transform.SetParent(null, true);
-        carregando.transform.position = transform.position + Vector3.right * (Renderer.flipX ? - 1.4f : 1.4f);
+        carregando.transform.position = transform.position + Vector3.right * (Renderer.flipX ? -1.4f : 1.4f);
         carregando.carregado = false;
         carregando.GetComponent<Collider2D>().enabled = true;
         carregando.GetComponent<Rigidbody2D>().isKinematic = false;
@@ -645,20 +581,13 @@ public class Samurai : MonoBehaviour
         if (modelo == null || modelo.GetComponent<ProjetilTemplo>() == null || modelo.GetComponent<Rigidbody2D>() == null)
             return null;
         PodeDisparar = false;
-        Invoke("AtivarDisparo", new float[]
-        {
-            .4f, .8f, 1.2f
-        }
-        [tipo]);
-        float direcao = Renderer.flipX ? - 1 : 1;
+        Invoke("AtivarDisparo", RecargaPorProjetil[tipo]);
+        float direcao = Renderer.flipX ? -1 : 1;
         GameObject tiro = Instantiate(modelo, transform.position + new Vector3(direcao * 0.9f, 0, 0), Quaternion.identity);
         tiro.GetComponent<ProjetilTemplo>().PrepararDisparo(this);
         SomRonin.Tocar(tipo == 2 ? "magia" : "tiro", transform.position);
-        tiro.GetComponent<Rigidbody2D>().velocity = new Vector2(direcao * new float[]
-        {
-            10, 7, 6
-        }
-        [tipo], tipo == 2 ? 5 : 0);
+        float velocidadeY = tipo == 2 ? 5 : 0;
+        tiro.GetComponent<Rigidbody2D>().velocity = new Vector2(direcao * VelocidadePorProjetil[tipo], velocidadeY);
         return tiro;
     }
 
@@ -715,7 +644,7 @@ public class Samurai : MonoBehaviour
         proximoPortal = Time.time + 1;
         transform.SetParent(null, true);
         // Aula 03x08: sai a direita do portal02 e a esquerda do portal01, fora do trigger.
-        float ladoSaida = destino.CompareTag("portal01") ? - 1f : 1f;
+        float ladoSaida = destino.CompareTag("portal01") ? -1f : 1f;
         transform.position = destino.position + Vector3.right * (1.8f * ladoSaida);
         CorpoRigidoPersonagem.velocity = Vector2.zero;
         portalUsado = true;

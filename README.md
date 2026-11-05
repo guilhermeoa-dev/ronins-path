@@ -57,7 +57,7 @@ A disponibilidade das ações depende do estado do personagem. A defesa de proj�
 
 [Guia em PDF: requisitos e código explicado linha por linha](docs/Ronins_Path_Guia_Codigos_4_Bimestre.pdf)
 
-O guia apresenta as cinco exigências de combate do 4º bimestre e 35 funções/propriedades selecionadas. A compilação da versão formatada foi verificada no Unity 2017.4.40f1.
+O guia apresenta as cinco exigências de combate do 4º bimestre e explica 35 funções e propriedades. Para acompanhar o PDF linha por linha, abra os [scripts da edição usada no guia](https://github.com/guilhermeoa-dev/ronins-path/tree/d0c70980a11abadd6165b8f95d838469c35f3a71/Assets/Scripts). A pasta `Assets/Scripts` da branch `main` contém a versão simplificada.
 
 ## Créditos e uso
 

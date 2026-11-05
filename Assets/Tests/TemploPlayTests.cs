@@ -36,12 +36,11 @@ public class TemploPlayTests : MonoBehaviour {
   Captura("inicio");
   foreach(GuardaTemplo guarda in FindObjectsOfType<GuardaTemplo>())guarda.enabled=false;
   Rigidbody2D rb=s.GetComponent<Rigidbody2D>();
-  ObjetoTemplo caixa=null,selo=null,portal=null,meta=null;
+  ObjetoTemplo caixa=null,selo=null,portal=null;
   foreach(ObjetoTemplo o in FindObjectsOfType<ObjetoTemplo>()) {
    if(o.tipo==ObjetoTemplo.Tipo.CaixaMovel)caixa=o;
    if(o.tipo==ObjetoTemplo.Tipo.Selo)selo=o;
    if(o.tipo==ObjetoTemplo.Tipo.Portal)portal=o;
-   if(o.tipo==ObjetoTemplo.Tipo.Pergaminho)meta=o;
   }
   s.transform.position=caixa.transform.position+Vector3.left;rb.velocity=Vector2.zero;
   s.CarregarObjeto(caixa);Verificar("E - carregar usa hierarquia",caixa.transform.parent==s.transform&&caixa.carregado);
@@ -104,8 +103,7 @@ public class TemploPlayTests : MonoBehaviour {
   s.transform.position=chefe.transform.position+new Vector3(-3,1.1f,0);rb.velocity=Vector2.zero;s.GetComponent<SpriteRenderer>().flipX=false;
   for(int n=0;n<4;n++){yield return new WaitForSeconds(1.3f);s.tipoProjetil=1;s.DispararMissao();yield return new WaitForSeconds(.6f);}
   Verificar("Projeteis derrotam Old Samurai",s.guardiaoFinal==null||s.guardiaoFinal.Derrotado);
-  s.transform.position=meta.transform.position;yield return new WaitForSeconds(.15f);
-  Verificar("Objetivos levam a vitoria",s.missaoEncerrada);
+  Verificar("Derrotar o mago encerra a missao com vitoria",s.missaoEncerrada && s.venceuMissao);
   Captura("vitoria");
   // Prepara uma queda apos a verificacao de vitoria para conferir o painel de derrota.
   s.missaoEncerrada=false;s.transform.position=new Vector3(2,-6,0);rb.velocity=Vector2.zero;

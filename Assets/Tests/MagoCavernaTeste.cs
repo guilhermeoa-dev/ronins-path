@@ -24,17 +24,32 @@ public class MagoCavernaTeste:MonoBehaviour {
  Foto("entrada_caverna");s.enabled=false;s.GetComponent<Rigidbody2D>().isKinematic=true;
  s.transform.position=new Vector3(14,1,0);yield return null;Foto("parede_grade");
  s.transform.position=new Vector3(47,1,0);yield return null;Foto("parede_santuario");
- s.transform.position=new Vector3(b.transform.position.x-3.8f,1,0);yield return new WaitForSeconds(.15f);Foto("mago_rajada_aviso");
- int vidas=s.VidasMissao;s.DefinirDefesa(true);yield return new WaitForSeconds(1f);
+ s.transform.position=new Vector3(2,1,0);
+ yield return EsperarAte(delegate { return b.estado == OldSamurai.Estado.Patrulha; }, b.aviso + b.recuperacao + 2);
+ s.transform.position=new Vector3(b.transform.position.x-3.8f,1,0);
+ yield return EsperarAte(delegate { return b.estado == OldSamurai.Estado.Preparando; }, 1);
+ Foto("mago_rajada_aviso");
+ int vidas=s.VidasMissao;s.DefinirDefesa(true);
+ yield return EsperarAte(delegate { return b.AtaqueExecutado == 1; }, b.aviso + 1);
  Check("Ataque 1 executa rajada",b.AtaqueExecutado==1);
  Check("Rajada usa prefab magico",b.projetil.name=="RajadaMago");
- s.transform.position=new Vector3(2,1,0);yield return new WaitForSeconds(1.2f);
- s.DefinirDefesa(false);s.transform.position=new Vector3(b.transform.position.x-1.25f,1,0);yield return new WaitForSeconds(.12f);
+ s.transform.position=new Vector3(2,1,0);
+ yield return EsperarAte(delegate { return b.estado == OldSamurai.Estado.Patrulha; }, b.recuperacao + 1);
+ s.DefinirDefesa(false);s.transform.position=new Vector3(b.transform.position.x-1.25f,1,0);
+ yield return EsperarAte(delegate { return b.estado == OldSamurai.Estado.Preparando; }, 1);
  Check("Ataque proximo usa segunda animacao",b.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("Ataque2"));Foto("mago_golpe_aviso");
- yield return new WaitForSeconds(.9f);Check("Ataque 2 executa golpe",b.AtaqueExecutado==2);Check("Golpe causa dano",s.VidasMissao<vidas);
+ yield return EsperarAte(delegate { return b.AtaqueExecutado == 2; }, b.aviso + 1);
+ Check("Ataque 2 executa golpe",b.AtaqueExecutado==2);Check("Golpe causa dano",s.VidasMissao<vidas);
  Check("Piso composto preservado",FindObjectOfType<CompositeCollider2D>().pathCount==2);
  b.GetComponent<AlvoTemplo>().ReceberDano(100,s);yield return new WaitForSeconds(.1f);Check("Morte usa animacao propria",b.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("Morte"));
  yield return new WaitForSeconds(.7f);Check("Chefe desaparece",b==null);Finalizar();
+ }
+
+ IEnumerator EsperarAte(System.Func<bool> condicao, float limiteSegundos)
+ {
+     float prazo = Time.time + limiteSegundos;
+     while (!condicao() && Time.time < prazo)
+         yield return null;
  }
 }
 #endif

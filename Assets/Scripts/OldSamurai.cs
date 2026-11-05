@@ -71,7 +71,14 @@
 
     bool Enxerga()
     {
-        return jogador != null && jogador.modoMissao && !jogador.missaoEncerrada && Mathf.Abs(jogador.transform.position.x - inicio.x) <= distanciaPatrulha + deteccao && Vector2.Distance(Centro, jogador.transform.position) <= deteccao && VisaoCombate.Livre(Centro, jogador.transform.position, gameObject, jogador);
+        if (jogador == null || !jogador.modoMissao || jogador.missaoEncerrada)
+            return false;
+
+        Vector2 posicaoJogador = jogador.transform.position;
+        float distanciaDaPatrulha = Mathf.Abs(posicaoJogador.x - inicio.x);
+        return distanciaDaPatrulha <= distanciaPatrulha + deteccao
+            && Vector2.Distance(Centro, posicaoJogador) <= deteccao
+            && VisaoCombate.Livre(Centro, posicaoJogador, gameObject, jogador);
     }
 
     void Trocar(Estado novo, float duracao, string animacao)
